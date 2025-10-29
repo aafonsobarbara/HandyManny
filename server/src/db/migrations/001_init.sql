@@ -1,0 +1,33 @@
+CREATE TABLE IF NOT EXISTS quotes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_json TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'Draft',
+  margin REAL NOT NULL DEFAULT 0,
+  terms TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS quote_materials (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  quote_id INTEGER NOT NULL,
+  item TEXT NOT NULL,
+  qty REAL NOT NULL,
+  unit TEXT,
+  store TEXT,
+  unit_price REAL,
+  total REAL,
+  link TEXT,
+  manual INTEGER DEFAULT 0,
+  FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS quote_labor (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  quote_id INTEGER NOT NULL,
+  description TEXT NOT NULL,
+  rate REAL NOT NULL,
+  hours REAL NOT NULL,
+  total REAL,
+  FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE
+);
