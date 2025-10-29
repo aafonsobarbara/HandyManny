@@ -49,7 +49,34 @@ export async function requestQuoteStructure(
   });
 
   if (!response.ok) {
-    throw new Error(`AI request failed with status ${response.status}`);
+    let errorDetail = '';
+    try {
+      const errorText = await response.text();
+      if (errorText) {
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorDetail =
+            typeof errorJson?.error?.message === 'string'
+              ? errorJson.error.message
+              : errorText;
+        } catch {
+          errorDetail = errorText;
+        }
+      }
+    } catch {
+      // Ignore parsing issues and fall back to generic messaging
+    }
+
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('retry-after');
+      const waitMessage = retryAfter
+        ? `Please wait ${retryAfter} seconds and try again.`
+        : 'Please wait a moment and try again.';
+      throw new Error(`The AI service is currently rate limiting requests. ${waitMessage}`);
+    }
+
+    const detailSuffix = errorDetail ? `: ${errorDetail}` : '';
+    throw new Error(`AI request failed with status ${response.status}${detailSuffix}`);
   }
 
   const data = await response.json();
